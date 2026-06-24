@@ -97,6 +97,7 @@ Si tienes dudas sobre si algo se ve "genérico de IA", pregúntate: ¿esto podr�
 - Cuando recibas esa instrucción: ejecuta `date` en la terminal para obtener la fecha y hora real del sistema. **Nunca inventes ni asumas una fecha.**
 - Cada entrada debe incluir, como mínimo: fecha y hora reales, qué se logró, qué decisiones de diseño o arquitectura se tomaron, y qué errores se encontraron y cómo se resolvieron.
 - Antes de empezar a trabajar en cualquier tarea nueva, lee Bitacoras.md completo para revisar si un problema parecido ya ocurrió antes.
+- Las entradas siempre se agregan al final del archivo, en orden cronológico. Nunca se insertan entre entradas anteriores ni se reescribe o borra una entrada ya existente.
 
 ## 8. Estructura de carpetas propuesta
 
