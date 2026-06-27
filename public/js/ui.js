@@ -109,6 +109,7 @@ function setupHome() {
   characters        = [];
   caracteresPrevios = 0;
   appState.myTeam   = null;
+  appState.roomCode = null; /* evita que auto-reconnect intente volver a una sala vieja */
   pararCronometro();
   /* Limpia estado de error del input de nombre y registra listener */
   var nameInput = document.getElementById('input-name');
@@ -530,6 +531,21 @@ function actualizarCodigoBadge() {
   var visible = !!(code && currentScreen !== 'home');
   badge.hidden = !visible;
   if (code) codeEl.textContent = code;
+}
+
+/* ============================================================
+   AVISO DE RECONEXIÓN FALLIDA
+   ============================================================ */
+var _notifTimer = null;
+
+function mostrarErrorReconexion(msg) {
+  var notif = document.getElementById('notif-reconexion');
+  var msgEl = document.getElementById('notif-reconexion-msg');
+  if (!notif || !msgEl) return;
+  msgEl.textContent = msg;
+  notif.hidden = false;
+  clearTimeout(_notifTimer);
+  _notifTimer = setTimeout(function() { notif.hidden = true; }, 6000);
 }
 
 /* ============================================================

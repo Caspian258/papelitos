@@ -41,6 +41,31 @@ var socket = io();
 
 socket.on('connect', function() {
   appState.myId = socket.id;
+
+  /* Si había una sesión activa (roomCode y myName ya existen), volver a unirse
+     automáticamente sin que el usuario tenga que hacer nada. */
+  if (appState.roomCode && appState.myName) {
+    socket.emit('join_room', { name: appState.myName, code: appState.roomCode }, function(res) {
+      if (res.error) {
+        /* La sala ya no existe (servidor reiniciado, etc.). Avisamos y volvemos al inicio. */
+        var msg = res.error === 'Sala no encontrada'
+          ? 'La sala ya no existe — el servidor se reinició. Podés crear una nueva o pedirle el código al anfitrión.'
+          : 'No se pudo volver a la sala: ' + res.error;
+        appState.roomCode = null;
+        if (typeof mostrarErrorReconexion === 'function') mostrarErrorReconexion(msg);
+        showScreen('home');
+        return;
+      }
+      if (res.reconnected) {
+        Object.assign(appState, res);
+        appState.isHost = (appState.myId === res.hostId);
+        appState.myTeam = res.myTeam;
+        if (res.currentCard) appState.currentCard = res.currentCard;
+        caracteresPrevios = res.submittedCount || 0;
+        showScreen(calcularPantallaReconexion(res));
+      }
+    });
+  }
 });
 
 /* ── Estado completo (resync) ────────────────────────────────── */

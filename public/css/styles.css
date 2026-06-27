@@ -695,6 +695,29 @@ svg { display: block; flex-shrink: 0; }
 }
 
 /* ============================================================
+   AVISO DE RECONEXIÓN FALLIDA
+   ============================================================ */
+#notif-reconexion {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-0.5deg);
+  z-index: 300;
+  background: var(--cream);
+  border-left: 3px solid var(--color-a);
+  border-radius: 4px;
+  padding: 12px 18px;
+  max-width: 300px;
+  width: calc(100% - 48px);
+  box-shadow: 2px 4px 12px rgba(44,28,12,.28);
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--brown);
+  line-height: 1.4;
+}
+#notif-reconexion p { margin: 0; }
+
+/* ============================================================
    BADGE CÓDIGO DE SALA — persiste en todas las pantallas tras unirse
    ============================================================ */
 #room-code-badge {
