@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#D6BC97" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Papelitos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+
+<!-- Badge persistente: código de sala, visible en todas las pantallas
+     después de entrar, oculto en home. Queda fuera de las <section>. -->
+<div id="room-code-badge" hidden aria-hidden="true">
+  <div class="badge-tape"></div>
+  <span class="badge-sala">sala</span>
+  <span id="room-code-badge-text" class="badge-code">—</span>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PANTALLA 1 — ENTRADA
+     ═══════════════════════════════════════════════════════ -->
+<section class="screen" id="screen-home" hidden>
+  <div class="screen-texture"></div>
+  <div class="screen-vignette"></div>
+  <div class="screen-content" style="justify-content:center; gap:0;">
+
+    <!-- Tarjeta título -->
+    <div class="card-wrap" style="margin-bottom:6px;">
+      <div class="tape tape--left"></div>
+      <div class="tape tape--right"></div>
+      <div class="paper-card paper-card--shadow-lg" style="--r:-1.8deg; padding:36px 28px 32px; text-align:center;">
+        <h1 style="font-family:var(--font-marker); font-size:54px; color:var(--brown); line-height:1;">Papelitos</h1>
+        <p style="font-family:var(--font-body); font-size:14px; color:rgba(44,28,12,.55); margin-top:8px; font-style:italic; letter-spacing:.02em;">el juego de los famosos</p>
+        <svg style="margin:12px auto 0;" width="112" height="12" viewBox="0 0 112 12" fill="none">
+          <path d="M2 9 Q14 3 26 8 Q38 13 50 8 Q62 3 74 8 Q86 13 98 7 Q105 5 110 6" stroke="#D49520" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Campo "tu nombre" — compartido por Crear sala y Continuar con código -->
+    <div class="card-wrap" style="margin-top:16px; margin-bottom:0;">
+      <div class="tape tape--center" style="--tr:-0.8deg;"></div>
+      <div class="paper-card paper-card--lined" style="--r:0.5deg; padding:18px 22px 14px;">
+        <div class="paper-margin-line"></div>
+        <div style="display:flex; align-items:center; gap:8px; padding-left:36px;">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="rgba(44,28,12,.28)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 1.5L13 4.5L4.5 13L1 14L2 10.5L10 1.5Z"/>
+          </svg>
+          <input type="text" id="input-name" class="text-input"
+                 placeholder="tu nombre"
+                 autocomplete="off" autocorrect="off" autocapitalize="words"
+                 maxlength="30" enterkeyhint="next" />
+        </div>
+        <p id="name-error" class="input-error-msg">Escribí tu nombre primero</p>
+      </div>
+    </div>
+
+    <!-- Crear sala nueva -->
+    <button class="btn btn--green" style="--r:-0.3deg; margin-top:14px;" onclick="emitCreateRoom()">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="#F5EDD8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="8,4 22,13 8,22"/>
+      </svg>
+      Crear sala nueva
+    </button>
+
+    <!-- Separador -->
+    <p style="text-align:center; font-family:var(--font-body); font-size:12px; color:rgba(44,28,12,.38); margin:16px 0 12px; letter-spacing:.04em;">— o si te mandaron un código —</p>
+
+    <!-- Tarjeta de ingreso (solo código) -->
+    <div class="card-wrap">
+      <div class="tape tape--center" style="--tr:-1.5deg;"></div>
+      <div class="paper-card paper-card--lined" style="--r:0.6deg; padding:22px 22px 20px;">
+        <div class="paper-margin-line"></div>
+
+        <!-- Código de sala -->
+        <div style="padding-left:36px; margin-bottom:20px;">
+          <span style="font-family:var(--font-body); font-size:11px; color:rgba(44,28,12,.38); letter-spacing:.04em; display:block; margin-bottom:4px;">código de sala</span>
+          <input type="text" id="input-code" class="text-input text-input--code"
+                 placeholder="Z4BX"
+                 autocomplete="off" autocorrect="off" autocapitalize="characters"
+                 maxlength="6" enterkeyhint="go"
+                 style="border-bottom:2px dashed rgba(212,149,32,.4); padding-bottom:2px; width:120px;" />
+        </div>
+
+        <!-- Continuar -->
+        <button class="btn btn--amber" style="--r:0.4deg;" onclick="emitJoinRoom()">
+          Continuar
+          <svg width="18" height="14" viewBox="0 0 18 14" fill="none" stroke="#F5EDD8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 7H17M11 1L17 7L11 13"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PANTALLA 2 — SELECCIÓN DE EQUIPO
+     ═══════════════════════════════════════════════════════ -->
+<section class="screen" id="screen-team-select" hidden>
+  <div class="screen-texture"></div>
+  <div class="screen-vignette"></div>
+  <div class="screen-content" style="gap:14px; padding-top:32px;">
+
+    <!-- Pregunta -->
+    <h2 style="font-family:var(--font-marker); font-size:28px; color:var(--navy); text-align:center; line-height:1.2; margin-bottom:4px;">¿A cuál equipo<br>te sumás?</h2>
+
+    <!-- Equipo A -->
+    <div class="team-option card-wrap" id="team-card-a" data-team="a" onclick="emitJoinTeam(0)">
+      <div class="chosen-badge chosen-badge--a">¡Este!</div>
+      <div class="tape tape--center tape--med" style="--tr:1.8deg;"></div>
+      <div class="paper-card" style="--r:-1.2deg; filter:drop-shadow(2px 4px 10px rgba(44,28,12,.28)); padding:0 0 20px;">
+        <!-- Strip terracota -->
+        <div style="background:var(--color-a); border-radius:8px 8px 0 0; padding:10px 16px; display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+          <span style="font-family:var(--font-marker); font-size:20px; color:var(--cream);">Equipo A</span>
+          <svg width="24" height="22" viewBox="0 0 24 22" fill="none" stroke="#F5EDD8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="8.5" cy="6" r="3.2"/><circle cx="15.5" cy="6" r="3.2"/>
+            <path d="M1 21c0-3.5 3.1-6 7.5-6h7c4.4 0 7.5 2.5 7.5 6"/>
+          </svg>
+        </div>
+        <!-- Lista de jugadores (renderizada dinámicamente por setupTeamSelect) -->
+        <div id="ts-team-0-players" style="padding:0 20px 0 20px;">
+          <div class="player-row pending"><span>esperando...</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Equipo B -->
+    <div class="team-option card-wrap" id="team-card-b" data-team="b" onclick="emitJoinTeam(1)">
+      <div class="chosen-badge chosen-badge--b">¡Este!</div>
+      <div class="tape tape--center tape--med" style="--tr:-1.2deg;"></div>
+      <div class="paper-card" style="--r:1.4deg; filter:drop-shadow(2px 4px 10px rgba(44,28,12,.28)); padding:0 0 20px;">
+        <!-- Strip amber -->
+        <div style="background:var(--color-b); border-radius:8px 8px 0 0; padding:10px 16px; display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+          <span style="font-family:var(--font-marker); font-size:20px; color:var(--cream);">Equipo B</span>
+          <svg width="24" height="22" viewBox="0 0 24 22" fill="none" stroke="#F5EDD8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="8.5" cy="6" r="3.2"/><circle cx="15.5" cy="6" r="3.2"/>
+            <path d="M1 21c0-3.5 3.1-6 7.5-6h7c4.4 0 7.5 2.5 7.5 6"/>
+          </svg>
+        </div>
+        <!-- Lista de jugadores (renderizada dinámicamente por setupTeamSelect) -->
+        <div id="ts-team-1-players" style="padding:0 20px 0 20px;">
+          <div class="player-row pending"><span>esperando...</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Continuar (aparece tras elegir equipo) -->
+    <button class="btn btn--green" id="btn-team-continue" style="--r:0.4deg; margin-top:4px;" hidden onclick="showScreen('register')">
+      Continuar
+      <svg width="18" height="14" viewBox="0 0 18 14" fill="none" stroke="#F5EDD8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1 7H17M11 1L17 7L11 13"/>
+      </svg>
+    </button>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PANTALLA 3 — REGISTRO DE PERSONAJES
+     ═══════════════════════════════════════════════════════ -->
+<section class="screen" id="screen-register" hidden>
+  <div class="screen-texture"></div>
+  <div class="screen-vignette"></div>
+  <div class="screen-content" style="gap:0; padding-top:28px;">
+
+    <!-- Contador -->
+    <div style="text-align:center; margin-bottom:10px;">
+      <span id="char-count" style="font-family:var(--font-marker); font-size:42px; color:var(--brown); line-height:1;">0</span>
+      <span style="font-family:var(--font-body); font-size:14px; color:rgba(44,28,12,.55); font-style:italic;"> de 5 papelitos escritos</span>
+    </div>
+
+    <!-- Puntos de progreso -->
+    <div id="progress-dots" class="progress-dots" style="margin-bottom:22px;">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+
+    <!-- Pila de personajes escritos (renderizada por JS) -->
+    <div id="pile-container" style="position:relative; height:0; margin:0 8px; overflow:visible;"></div>
+
+    <!-- Tarjeta de escritura activa -->
+    <div id="input-char-wrap" class="card-wrap" style="margin:0 0 16px;">
+      <div class="tape tape--center" style="--tr:2deg;"></div>
+      <div class="paper-card paper-card--lined" style="--r:-0.7deg; filter:drop-shadow(1px 3px 6px rgba(44,28,12,.18)); padding:22px 20px 18px;">
+        <div class="paper-margin-line"></div>
+        <div style="padding-left:36px;">
+          <div class="section-label" style="margin-bottom:6px;" id="char-next-label">personaje #1</div>
+          <input type="text"
+                 id="input-character"
+                 class="text-input text-input--character"
+                 placeholder="nombre del personaje..."
+                 autocomplete="off" autocorrect="off" autocapitalize="words"
+                 enterkeyhint="done" maxlength="60" />
+          <p style="font-family:var(--font-body); font-size:11px; color:rgba(44,28,12,.32); margin-top:8px; font-style:italic;">enter para agregar</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botón listo -->
+    <button id="btn-listo" class="btn btn--green btn--dimmed" style="--r:0.4deg;" onclick="finalizarRegistro()">
+      <svg width="26" height="30" viewBox="0 0 26 30" fill="none" stroke="#F5EDD8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 9 Q8 5 13 5 Q18 5 18 9"/>
+        <path d="M4 9 H22 L20 28 H6 L4 9Z"/>
+        <path d="M9 14 Q9 17 13 17 Q17 17 17 14"/>
+      </svg>
+      Listo, los eché a la bolsa
+    </button>
+
+    <p style="font-family:var(--font-body); font-size:11px; color:rgba(44,28,12,.38); text-align:center; margin-top:12px; font-style:italic;">podés seguir escribiendo cuando quieras</p>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PANTALLA 4 — SALA DE ESPERA
+     ═══════════════════════════════════════════════════════ -->
+<section class="screen" id="screen-lobby" hidden>
+  <div class="screen-texture"></div>
+  <div class="screen-vignette"></div>
+  <div class="screen-content" style="gap:14px; padding-top:28px;">
+
+    <!-- Header: código de sala -->
+    <div style="display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:2px;">
+      <span style="font-family:var(--font-body); font-size:14px; color:rgba(44,28,12,.55); font-style:italic;">Sala</span>
+      <div style="background:var(--navy); border-radius:10px; padding:6px 14px; display:flex; align-items:center; gap:6px;">
+        <span id="lobby-room-code" style="font-family:var(--font-marker); font-size:22px; color:var(--cream); letter-spacing:.1em;">Z4BX</span>
+        <span id="lobby-player-count" style="font-family:var(--font-body); font-size:11px; color:rgba(245,237,216,.65); font-style:italic; padding:2px 6px; background:rgba(245,237,216,.12); border-radius:6px;">0 jugadores</span>
+      </div>
+    </div>
+
+    <!-- Columnas de equipos -->
+    <div class="lobby-cols">
+      <!-- Equipo A -->
+      <div class="lobby-col">
+        <div class="card-wrap">
+          <div class="tape tape--center tape--sm" style="--tr:1.5deg;"></div>
+          <div class="paper-card paper-card--narrow" style="--r:-0.8deg; filter:drop-shadow(1px 3px 7px rgba(44,28,12,.22)); padding:0 0 14px;">
+            <div style="background:var(--color-a); padding:8px 12px; margin-bottom:10px; border-radius:4px 4px 0 0;">
+              <span style="font-family:var(--font-marker); font-size:14px; color:var(--cream);">Equipo A</span>
+            </div>
+            <div id="lobby-team-0-players" style="padding:0 10px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Equipo B -->
+      <div class="lobby-col">
+        <div class="card-wrap">
+          <div class="tape tape--center tape--sm" style="--tr:-1.8deg;"></div>
+          <div class="paper-card paper-card--narrow" style="--r:0.9deg; filter:drop-shadow(1px 3px 7px rgba(44,28,12,.22)); padding:0 0 14px;">
+            <div style="background:var(--color-b); padding:8px 12px; margin-bottom:10px; border-radius:4px 4px 0 0;">
+              <span style="font-family:var(--font-marker); font-size:14px; color:var(--cream);">Equipo B</span>
+            </div>
+            <div id="lobby-team-1-players" style="padding:0 10px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Aviso de faltantes -->
+    <div class="card-wrap">
+      <div class="paper-card paper-card--short paper-card--shadow-xs" style="--r:-0.4deg; padding:16px 18px; display:flex; align-items:flex-start; gap:10px;">
+        <svg style="flex-shrink:0; margin-top:2px;" width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M10 2L18 17H2L10 2Z" stroke="#D49520" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="10" y1="9" x2="10" y2="13" stroke="#D49520" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="10" cy="15.5" r="0.8" fill="#D49520"/>
+        </svg>
+        <div>
+          <p style="font-family:var(--font-marker); font-size:14px; color:var(--brown); margin-bottom:2px;">Falta gente</p>
+          <p style="font-family:var(--font-body); font-size:12px; color:rgba(44,28,12,.55); font-style:italic;">Avísale a los que no han entrado todavía</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botón empezar -->
+    <button class="btn btn--terracota" id="lobby-start-btn" style="--r:0.3deg;" onclick="emitStartGame()">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="#F5EDD8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="8,4 22,13 8,22"/>
+      </svg>
+      Empezar partida
+    </button>
+
+    <p style="font-family:var(--font-body); font-size:11px; color:rgba(44,28,12,.4); text-align:center; font-style:italic;">Invitados: ya están listos cuando entren</p>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PANTALLA 5 — ESPECTADOR (turno ajeno)
+     No incluye el nombre del personaje — ni visible ni oculto.
+     ═══════════════════════════════════════════════════════ -->
+<section class="screen" id="screen-spectator" hidden>
+  <div class="screen-texture"></div>
+  <div class="screen-vignette"></div>
+  <div class="screen-content" style="gap:0; padding-top:20px; padding-left:0; padding-right:0;">
+
+    <!-- Strip "Está describiendo" -->
+    <div style="margin:0 16px 20px; background:var(--color-a); border-radius:14px; padding:11px 16px; display:flex; align-items:center; gap:12px; box-shadow:0 2px 8px rgba(194,91,58,.35);">
+      <svg width="26" height="24" viewBox="0 0 26 24" fill="none" stroke="#F5EDD8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 8H8L15 4V20L8 16H3V8Z"/>
+        <path d="M18 7Q22 12 18 17"/>
+        <path d="M8 16L9.5 22H5.5L4 16"/>
+      </svg>
+      <div>
+        <div style="font-family:var(--font-body); font-size:11px; color:rgba(245,237,216,.7); font-style:italic; letter-spacing:.08em; text-transform:uppercase;">Está describiendo</div>
+        <div style="font-family:var(--font-marker); font-size:22px; color:var(--cream); line-height:1.2;" id="spec-describer">Laura · Equipo A</div>
+      </div>
+    </div>
+
+    <!-- Cronómetro grande -->
+    <div class="timer-wrap" style="padding:10px 0 20px;">
+      <svg class="timer-oval" width="130" height="126" viewBox="0 0 130 126" fill="none">
+        <path d="M65 10 Q115 8 122 60 Q129 112 72 121 Q18 130 6 78 Q-6 26 50 12 Q57 10 65 10Z" stroke="#1D3D50" stroke-width="1.8" fill="none" stroke-dasharray="4 3" opacity=".32"/>
+      </svg>
+      <div class="timer-number" id="spec-timer">32</div>
+      <div class="timer-label">segundos</div>
+    </div>
+
+    <!-- Marcador -->
+    <div class="card-wrap" style="margin:0 16px 16px;">
+      <div class="tape tape--center" style="--tr:1.4deg; width:58px; height:18px;"></div>
+      <div class="paper-card" style="--r:-0.6deg; filter:drop-shadow(2px 4px 10px rgba(44,28,12,.22));">
+        <div class="paper-margin-line"></div>
+        <div class="scoreboard">
+          <div class="scoreboard__label">Marcador</div>
+          <div class="scoreboard__row">
+            <div class="scoreboard__team">
+              <div class="scoreboard__team-name scoreboard__team-name--a">Equipo A</div>
+              <div class="scoreboard__score" id="spec-score-a">14</div>
+            </div>
+            <div class="scoreboard__divider"></div>
+            <div class="scoreboard__team">
+              <div class="scoreboard__team-name scoreboard__team-name--b">Equipo B</div>
+              <div class="scoreboard__score" id="spec-score-b">11</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quedan X papelitos -->
+    <div style="display:flex; justify-content:center; margin-bottom:16px;">
+      <div class="remaining-pill">
+        <svg width="18" height="20" viewBox="0 0 18 20" fill="none" stroke="#1D3D50" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="4" width="13" height="15" rx="1.5"/>
+          <rect x="1" y="2" width="13" height="15" rx="1.5" fill="rgba(245,237,216,.8)"/>
+          <rect x="0.5" y="0.5" width="13" height="15" rx="1.5"/>
+          <line x1="3" y1="6" x2="10" y2="6"/><line x1="3" y1="9" x2="7.5" y2="9"/>
+        </svg>
+        Quedan <strong id="spec-remaining">6</strong> papelitos
+      </div>
+    </div>
+
+    <!-- Papelito de ánimo -->
+    <div class="card-wrap" style="margin:0 16px;">
+      <div class="tape tape--center" style="--tr:1.4deg; width:58px; height:18px;"></div>
+      <div class="paper-card paper-card--wide-short" style="--r:1.4deg; filter:drop-shadow(1px 2px 5px rgba(44,28,12,.12)); padding:18px 20px;">
+        <p style="font-family:var(--font-marker); font-size:20px; color:var(--brown); text-align:center;">¡Ánimo Equipo A! 🙌</p>
+        <p style="font-family:var(--font-body); font-size:12px; color:rgba(44,28,12,.55); text-align:center; margin-top:4px; font-style:italic;">Laura ya va por el cuarto...</p>
+      </div>
+    </div>
+
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PANTALLA 6 — TRANSICIÓN DE RONDA
+     ═══════════════════════════════════════════════════════ -->
+<section class="screen" id="screen-round-transition" hidden>
+  <div class="screen-texture"></div>
+  <div class="screen-vignette"></div>
+  <div class="screen-content" style="gap:0; padding-left:0; padding-right:0; justify-content:center;">
+
+    <!-- Strip de puntaje -->
+    <div style="margin:0 16px 20px;" class="score-strip">
+      <span class="score-strip__label">Hasta acá:</span>
+      <div class="score-strip__scores">
+        <span>Eq.A <span class="score-strip__val-a" id="rt-score-a">14</span></span>
+        <span class="score-strip__sep">·</span>
+        <span>Eq.B <span class="score-strip__val-b" id="rt-score-b">11</span></span>
+      </div>
+    </div>
+
+    <!-- Tarjeta de anuncio de ronda -->
+    <div class="card-wrap" style="margin:0 16px 22px;">
+      <div class="tape tape--center" style="--tr:1.4deg;"></div>
+      <div class="paper-card paper-card--shadow-lg" style="--r:-1.8deg; padding:28px 24px 24px; text-align:center;">
+        <div class="paper-margin-line"></div>
+
+        <!-- Etiqueta de ronda -->
+        <div class="section-label" style="text-align:center; margin-bottom:12px;" id="rt-round-label">Ronda 2</div>
+
+        <!-- Ícono (cambia por JS) -->
+        <div id="rt-icon" style="display:flex; justify-content:center; margin-bottom:14px;">
+          <!-- JS inserta el SVG correcto -->
+        </div>
+
+        <!-- Nombre de la ronda -->
+        <h2 style="font-family:var(--font-marker); font-size:30px; color:var(--brown); margin-bottom:10px; line-height:1.1;" id="rt-round-name">Una sola palabra</h2>
+
+        <!-- Regla -->
+        <div style="background:rgba(29,61,80,.07); border-radius:8px; padding:10px 14px; margin-bottom:14px;">
+          <p style="font-family:var(--font-body); font-size:13px; color:var(--navy); line-height:1.5; font-style:italic;" id="rt-rule">Solo podés decir <strong>una palabra</strong> como pista. Sin gestos, sin sonidos extra.</p>
+        </div>
+
+        <!-- Subrayado decorativo -->
+        <svg style="margin:0 auto;" width="112" height="12" viewBox="0 0 112 12" fill="none">
+          <path d="M2 9 Q14 3 26 8 Q38 13 50 8 Q62 3 74 8 Q86 13 98 7 Q105 5 110 6" stroke="#D49520" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Botón empezar ronda -->
+    <div style="padding:0 16px;">
+      <button class="btn btn--green" style="--r:0.4deg;" id="rt-btn" onclick="emitStartTurn()">
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="#F5EDD8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="8,4 22,13 8,22"/>
+        </svg>
+        <span id="rt-btn-text">Empezar Ronda 2</span>
+      </button>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PANTALLA 7 — TURNO ACTIVO (quien describe)
+     ═══════════════════════════════════════════════════════ -->
+<section class="screen" id="screen-turn" hidden>
+  <div class="screen-texture"></div>
+  <div class="screen-vignette"></div>
+  <div class="screen-content" style="gap:0; padding-left:0; padding-right:0; padding-top:16px;">
+
+    <!-- Strip de equipo -->
+    <div class="team-strip team-strip--a" style="margin:0 16px 18px;">
+      <div class="team-strip__left">
+        <svg width="24" height="22" viewBox="0 0 24 22" fill="none" stroke="#F5EDD8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="8.5" cy="6" r="3.2"/><circle cx="15.5" cy="6" r="3.2"/>
+          <path d="M1 21c0-3.5 3.1-6 7.5-6h7c4.4 0 7.5 2.5 7.5 6"/>
+        </svg>
+        <span class="team-strip__name" id="turn-team-name">Equipo A</span>
+      </div>
+      <div class="team-strip__right">
+        <svg width="16" height="19" viewBox="0 0 16 19" fill="none" stroke="#F5EDD8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="1.5" y="5" width="13" height="13.5" rx="1.5"/>
+          <path d="M4.5 5V3.5A3.5 3.5 0 018 0v0a3.5 3.5 0 013.5 3.5V5"/>
+          <line x1="5" y1="10" x2="11" y2="10"/><line x1="5" y1="13" x2="9" y2="13"/>
+        </svg>
+        <span class="team-strip__info"><span id="turn-remaining">8</span> papelitos</span>
+      </div>
+    </div>
+
+    <!-- Tarjeta del personaje -->
+    <div class="char-card-outer card-wrap" style="margin:0 16px 16px; transform:rotate(-2.2deg);">
+      <div class="tape tape--wide tape--center"></div>
+      <div class="paper-card paper-card--shadow-lg paper-card--lined" style="--r:0deg; padding:28px 22px 24px;">
+        <div class="paper-margin-line"></div>
+        <div class="section-label" style="padding-left:36px; margin-bottom:8px;" id="turn-round-label">una sola palabra</div>
+        <div style="padding-left:36px;">
+          <div style="font-family:var(--font-marker); font-size:38px; color:var(--brown); line-height:1.15;" id="turn-character">Harry Potter</div>
+        </div>
+        <svg style="margin:14px auto 0;" width="112" height="12" viewBox="0 0 112 12" fill="none">
+          <path d="M2 9 Q14 3 26 8 Q38 13 50 8 Q62 3 74 8 Q86 13 98 7 Q105 5 110 6" stroke="#D49520" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Cronómetro -->
+    <div class="timer-wrap" style="padding:8px 0 14px;">
+      <svg class="timer-oval" width="110" height="110" viewBox="0 0 110 110" fill="none">
+        <path d="M55 8 Q95 8 102 52 Q109 96 62 105 Q18 114 8 68 Q-2 22 42 10 Q48 8 55 8Z" stroke="#1D3D50" stroke-width="1.8" fill="none" stroke-dasharray="4 3" opacity=".35"/>
+      </svg>
+      <div class="timer-number timer-number--sm" id="turn-timer">47</div>
+      <div class="timer-label">segundos</div>
+    </div>
+
+    <!-- Botón Correcto -->
+    <div style="padding:0 16px; margin-bottom:10px;">
+      <button class="btn btn--green" style="--r:0.4deg; font-size:30px;" onclick="emitMarkGuessed()">
+        <svg width="30" height="28" viewBox="0 0 30 28" fill="none">
+          <path d="M3 15 L11 24 L27 5" stroke="#F5EDD8" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Correcto
+      </button>
+    </div>
+
+    <!-- Botón Rompí la regla -->
+    <div style="padding:0 16px;">
+      <button class="btn--ghost" style="--r:-0.5deg;" onclick="emitReportPenalty()">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M3.5 3.5 L14.5 14.5 M14.5 3.5 L3.5 14.5" stroke="#D49520" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+        Rompí la regla
+      </button>
+    </div>
+
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PANTALLA 8 — FIN DEL JUEGO
+     ═══════════════════════════════════════════════════════ -->
+<section class="screen" id="screen-winner" hidden>
+  <div class="screen-texture"></div>
+  <div class="screen-vignette"></div>
+
+  <div class="screen-content" style="gap:16px; justify-content:center; padding-left:16px; padding-right:16px;">
+
+    <!-- Confeti dentro de screen-content (z-2) con z-index:3 propio,
+         la tarjeta ganadora tiene z-index:10 → confeti queda detrás de ella -->
+    <div class="confetti-layer" style="z-index:3;">
+      <div class="cp" style="left:3%;  width:9px;  height:14px; background:#C25B3A; animation:fallA 3.1s -0.3s ease-in infinite; opacity:.82;"></div>
+      <div class="cp" style="left:12%; width:11px; height:16px; background:#D49520; animation:fallB 2.7s -1.1s ease-in infinite; opacity:.85;"></div>
+      <div class="cp" style="left:20%; width:8px;  height:12px; background:#F5EDD8; border:1px solid rgba(44,28,12,.10); animation:fallC 3.3s -0.7s ease-in infinite; opacity:.78;"></div>
+      <div class="cp" style="left:29%; width:14px; height:19px; background:#5E6C2A; animation:fallD 2.5s -1.8s ease-in infinite; opacity:.82;"></div>
+      <div class="cp" style="left:35%; width:7px;  height:11px; background:#D6BC97; animation:fallA 3.6s -0.5s ease-in infinite; opacity:.86;"></div>
+      <div class="cp" style="left:43%; width:12px; height:15px; background:#C25B3A; animation:fallB 2.9s -2.1s ease-in infinite; opacity:.80;"></div>
+      <div class="cp" style="left:51%; width:9px;  height:13px; background:#F5EDD8; border:1px solid rgba(44,28,12,.12); animation:fallC 3.2s -1.4s ease-in infinite; opacity:.83;"></div>
+      <div class="cp" style="left:58%; width:11px; height:17px; background:#D49520; animation:fallD 2.6s -0.9s ease-in infinite; opacity:.87;"></div>
+      <div class="cp" style="left:64%; width:8px;  height:10px; background:#5E6C2A; animation:fallA 3.4s -2.3s ease-in infinite; opacity:.79;"></div>
+      <div class="cp" style="left:70%; width:13px; height:18px; background:#1D3D50; animation:fallB 2.8s -0.2s ease-in infinite; opacity:.84;"></div>
+      <div class="cp" style="left:77%; width:10px; height:14px; background:#C25B3A; animation:fallC 3.0s -1.6s ease-in infinite; opacity:.81;"></div>
+      <div class="cp" style="left:83%; width:7px;  height:12px; background:#D49520; animation:fallD 3.5s -2.0s ease-in infinite; opacity:.88;"></div>
+      <div class="cp" style="left:89%; width:12px; height:16px; background:#F5EDD8; border:1px solid rgba(44,28,12,.10); animation:fallA 2.7s -0.6s ease-in infinite; opacity:.82;"></div>
+      <div class="cp" style="left:94%; width:9px;  height:13px; background:#5E6C2A; animation:fallB 3.1s -1.9s ease-in infinite; opacity:.80;"></div>
+      <div class="cp" style="left:7%;  width:11px; height:15px; background:#D6BC97; animation:fallC 2.9s -2.4s ease-in infinite; opacity:.85;"></div>
+      <div class="cp" style="left:16%; width:8px;  height:11px; background:#1D3D50; animation:fallD 3.3s -0.8s ease-in infinite; opacity:.83;"></div>
+      <div class="cp" style="left:25%; width:13px; height:17px; background:#C25B3A; animation:fallA 2.6s -1.3s ease-in infinite; opacity:.87;"></div>
+      <div class="cp" style="left:47%; width:10px; height:13px; background:#D49520; animation:fallB 3.4s -2.2s ease-in infinite; opacity:.79;"></div>
+      <div class="cp" style="left:67%; width:7px;  height:10px; background:#F5EDD8; border:1px solid rgba(44,28,12,.12); animation:fallC 2.8s -0.4s ease-in infinite; opacity:.86;"></div>
+      <div class="cp" style="left:82%; width:12px; height:18px; background:#5E6C2A; animation:fallD 3.0s -1.7s ease-in infinite; opacity:.81;"></div>
+    </div>
+
+    <!-- Tarjeta ganadora (z-10, sobre el confeti) -->
+    <div class="winner-card-wrap card-wrap">
+      <div class="tape tape--winner-left"></div>
+      <div class="tape tape--winner-right"></div>
+      <div class="paper-card paper-card--shadow-lg" style="--r:-1.1deg; padding:32px 24px 28px; text-align:center; overflow:hidden;">
+
+        <!-- Burst decorativo (z-0, dentro de la tarjeta) -->
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none; z-index:0; opacity:.07;">
+          <svg width="270" height="270" viewBox="0 0 270 270" fill="none" stroke="#C25B3A" stroke-width="3" stroke-linecap="round">
+            <line x1="135" y1="10"  x2="135" y2="260"/>
+            <line x1="10"  y1="135" x2="260" y2="135"/>
+            <line x1="48"  y1="48"  x2="222" y2="222"/>
+            <line x1="222" y1="48"  x2="48"  y2="222"/>
+            <line x1="20"  y1="90"  x2="250" y2="180"/>
+            <line x1="20"  y1="180" x2="250" y2="90"/>
+            <line x1="90"  y1="20"  x2="180" y2="250"/>
+            <line x1="180" y1="20"  x2="90"  y2="250"/>
+          </svg>
+        </div>
+
+        <!-- Contenido (z-1, sobre el burst) -->
+        <div style="position:relative; z-index:1;">
+          <div style="display:inline-block; background:var(--color-a); border-radius:8px; padding:6px 16px; box-shadow:0 4px 0 var(--color-a-dark), 0 5px 14px rgba(194,91,58,.4); transform:rotate(-1.4deg); margin-bottom:16px;">
+            <span style="font-family:var(--font-marker); font-size:22px; color:var(--cream);" id="winner-badge">¡Equipo A!</span>
+          </div>
+          <p style="font-family:var(--font-body); font-size:15px; color:rgba(44,28,12,.55); font-style:italic; margin-bottom:4px;">ganó el juego</p>
+          <p style="font-family:var(--font-marker); font-size:42px; color:var(--brown); line-height:1.1;">con <span id="winner-points" style="color:var(--color-a);">14</span> puntos</p>
+          <svg style="margin:14px auto 0;" width="112" height="12" viewBox="0 0 112 12" fill="none">
+            <path d="M2 9 Q14 3 26 8 Q38 13 50 8 Q62 3 74 8 Q86 13 98 7 Q105 5 110 6" stroke="#D49520" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Marcador final -->
+    <div class="card-wrap">
+      <div class="tape tape--center" style="--tr:-1.8deg; width:58px; height:18px;"></div>
+      <div class="paper-card" style="--r:1.4deg; filter:drop-shadow(1px 3px 8px rgba(44,28,12,.2));">
+        <div class="paper-margin-line"></div>
+        <div class="scoreboard">
+          <div class="scoreboard__label">Marcador final</div>
+          <div class="scoreboard__row">
+            <div class="scoreboard__team">
+              <div class="scoreboard__team-name scoreboard__team-name--a">Equipo A</div>
+              <div class="scoreboard__score" id="winner-score-a">14</div>
+            </div>
+            <div class="scoreboard__divider"></div>
+            <div class="scoreboard__team">
+              <div class="scoreboard__team-name scoreboard__team-name--b">Equipo B</div>
+              <div class="scoreboard__score" id="winner-score-b">11</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Jugar otra vez -->
+    <button class="btn btn--terracota2" style="--r:-0.4deg;" onclick="showScreen('home')">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="#F5EDD8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 13 A9 9 0 1 1 7 20"/>
+        <polyline points="3,20 7,20 7,16"/>
+      </svg>
+      Jugar otra vez
+    </button>
+
+  </div>
+</section>
+
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/ui.js"></script>
+<script src="/js/client.js"></script>
+</body>
+</html>
