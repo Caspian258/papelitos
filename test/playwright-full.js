@@ -494,6 +494,111 @@ async function testCrearSalaYReconexion(browser) {
 }
 
 /* ══════════════════════════════════════════════════════════════
+   TEST 4 — Registro de más personajes que el mínimo:
+     · Botón "Listo" se habilita exactamente en el 5to
+     · Sigue habilitado y el input sigue visible en el 6to, 7mo, 8vo
+     · El mazo al iniciar tiene los 8+5=13 personajes (no solo los 5 del mínimo)
+   ══════════════════════════════════════════════════════════════ */
+async function testMasDelMinimo(browser) {
+  console.log(SEP);
+  console.log('  TEST 4 — Registro por encima del mínimo de personajes');
+  console.log(SEP);
+
+  const ctx1 = await browser.newContext();
+  const ctx2 = await browser.newContext();
+  const p1   = await ctx1.newPage();
+  const p2   = await ctx2.newPage();
+
+  const code = await crearSala(p1, 'Extra');
+  await unirseASala(p2, 'Normal', code);
+
+  // P1 elige equipo A y llega a registro
+  await p1.click('#team-card-a');
+  await p1.waitForTimeout(300);
+  await p1.click('#btn-team-continue');
+  await p1.waitForSelector('#screen-register:not([hidden])', { timeout: 4000 });
+
+  // ── Personajes 1-4: botón debe seguir dimmed ───────────────
+  for (const c of ['E1', 'E2', 'E3', 'E4']) {
+    await p1.fill('#input-character', c);
+    await p1.press('#input-character', 'Enter');
+    await p1.waitForTimeout(350);
+  }
+  const dimmedEn4 = await p1.evaluate(() =>
+    document.getElementById('btn-listo').classList.contains('btn--dimmed')
+  );
+  assert(dimmedEn4, 'Con 4 personajes el botón Listo debe seguir dimmed');
+  log('✓ Con 4 personajes: botón Listo todavía dimmed');
+
+  // ── Personaje 5 (mínimo): botón debe activarse ─────────────
+  await p1.fill('#input-character', 'E5');
+  await p1.press('#input-character', 'Enter');
+  await p1.waitForTimeout(350);
+
+  const dimmedEn5 = await p1.evaluate(() =>
+    document.getElementById('btn-listo').classList.contains('btn--dimmed')
+  );
+  assert(!dimmedEn5, 'Con 5 personajes el botón Listo debe estar habilitado');
+  log('✓ Con 5 personajes (mínimo): botón Listo habilitado');
+
+  // Input debe seguir visible y activo
+  const inputVisible = await p1.evaluate(() =>
+    !document.getElementById('input-char-wrap').hidden
+  );
+  assert(inputVisible, 'El input debe seguir visible después del mínimo');
+  log('✓ Input sigue visible y activo después del mínimo');
+
+  // ── Personajes 6, 7, 8: botón debe seguir habilitado ───────
+  for (const c of ['E6', 'E7', 'E8']) {
+    await p1.fill('#input-character', c);
+    await p1.press('#input-character', 'Enter');
+    await p1.waitForTimeout(350);
+  }
+
+  const dimmedEn8 = await p1.evaluate(() =>
+    document.getElementById('btn-listo').classList.contains('btn--dimmed')
+  );
+  assert(!dimmedEn8, 'Con 8 personajes el botón Listo debe seguir habilitado');
+
+  const contadorEl = await p1.evaluate(() =>
+    parseInt(document.getElementById('char-count').textContent, 10)
+  );
+  assert(contadorEl === 8, `El contador debe mostrar 8, muestra: ${contadorEl}`);
+
+  const inputSigueVisible = await p1.evaluate(() =>
+    !document.getElementById('input-char-wrap').hidden
+  );
+  assert(inputSigueVisible, 'El input debe seguir visible con 8 personajes');
+  log('✓ Con 8 personajes: botón habilitado, contador en 8, input visible');
+
+  // ── P1 va al lobby ──────────────────────────────────────────
+  await irAlLobby(p1);
+
+  // ── P2 completa el mínimo (5) ───────────────────────────────
+  await p2.click('#team-card-b');
+  await p2.waitForTimeout(300);
+  await elegirEquipoYRegistrar(p2, 1, ['N1', 'N2', 'N3', 'N4', 'N5']);
+  await irAlLobby(p2);
+  await p1.waitForTimeout(400);
+
+  // ── Iniciar partida ─────────────────────────────────────────
+  await p1.click('#lobby-start-btn');
+  await Promise.all([
+    p1.waitForSelector('#screen-round-transition:not([hidden])', { timeout: 5000 }),
+    p2.waitForSelector('#screen-round-transition:not([hidden])', { timeout: 5000 }),
+  ]);
+
+  // ── Mazo debe tener 8+5=13 cartas ──────────────────────────
+  const mazo = await p1.evaluate(() => appState.deckRemaining);
+  assert(mazo === 13, `El mazo debe tener 13 cartas (8+5), tiene: ${mazo}`);
+  log(`✓ Mazo inicial: ${mazo} cartas — los 8 de P1 más los 5 de P2`);
+
+  await ctx1.close();
+  await ctx2.close();
+  log('✓ TEST 4 PASÓ\n');
+}
+
+/* ══════════════════════════════════════════════════════════════
    MAIN
    ══════════════════════════════════════════════════════════════ */
 async function main() {
@@ -509,6 +614,7 @@ async function main() {
     await testJuegoCompleto(browser);
     await testDesconexionEspectador(browser);
     await testCrearSalaYReconexion(browser);
+    await testMasDelMinimo(browser);
 
     console.log(SEP);
     console.log('  ✓ TODOS LOS TESTS PASARON');

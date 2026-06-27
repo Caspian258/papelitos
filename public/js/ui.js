@@ -195,19 +195,8 @@ function renderTeamChosen(teamIdx) {
    PANTALLA REGISTRO DE PERSONAJES
    ============================================================ */
 function setupRegister() {
-  CHAR_LIMIT  = (appState && appState.charactersPerPlayer) ? appState.charactersPerPlayer : 5;
+  CHAR_LIMIT = (appState && appState.charactersPerPlayer) ? appState.charactersPerPlayer : 5;
   actualizarRegistro();
-
-  /* Regenerar dots según CHAR_LIMIT */
-  var dotsContainer = document.getElementById('progress-dots');
-  if (dotsContainer) {
-    dotsContainer.innerHTML = '';
-    for (var i = 0; i < CHAR_LIMIT; i++) {
-      var dot = document.createElement('div');
-      dot.className = 'dot';
-      dotsContainer.appendChild(dot);
-    }
-  }
 
   var input = document.getElementById('input-character');
   if (input) {
@@ -216,12 +205,11 @@ function setupRegister() {
       if (e.key === 'Enter') {
         e.preventDefault();
         var nombre = input.value.trim();
-        if (!nombre || caracteresPrevios + characters.length >= CHAR_LIMIT) return;
+        if (!nombre) return;
         input.value = '';
         if (typeof emitSubmitCharacter === 'function') {
           emitSubmitCharacter(nombre);
         } else {
-          /* fallback sin socket (modo offline/demo) */
           agregarPersonaje(nombre);
         }
       }
@@ -237,20 +225,12 @@ function setupRegister() {
 function agregarPersonaje(character) {
   characters.push(character);
   actualizarRegistro();
-  var total = caracteresPrevios + characters.length;
-  if (total >= CHAR_LIMIT) {
-    var wrap = document.getElementById('input-char-wrap');
-    if (wrap) wrap.hidden = true;
-    var btn = document.getElementById('btn-listo');
-    if (btn) btn.focus();
-  } else {
-    var inputEl = document.getElementById('input-character');
-    if (inputEl) inputEl.focus();
-  }
+  /* El input permanece visible y activo siempre — sin límite superior */
+  var inputEl = document.getElementById('input-character');
+  if (inputEl) inputEl.focus();
 }
 
 function actualizarRegistro() {
-  /* n = total real (previos de sesiones anteriores + esta sesión) */
   var n = caracteresPrevios + characters.length;
 
   var countEl = document.getElementById('char-count');
@@ -259,11 +239,14 @@ function actualizarRegistro() {
   var label = document.getElementById('char-next-label');
   if (label) label.textContent = 'personaje #' + (n + 1);
 
-  var dots = document.querySelectorAll('#progress-dots .dot');
-  dots.forEach(function(dot, i) {
-    dot.classList.toggle('done', i < n);
-  });
+  var msgEl = document.getElementById('char-progress-msg');
+  if (msgEl) {
+    msgEl.textContent = n < CHAR_LIMIT
+      ? 'de ' + CHAR_LIMIT + ' — ¡dale!'
+      : 'en la bolsa — ¡agregá los que quieras!';
+  }
 
+  /* btn--dimmed solo mientras no se alcanzó el mínimo; nunca se reactiva */
   var btnListo = document.getElementById('btn-listo');
   if (btnListo) btnListo.classList.toggle('btn--dimmed', n < CHAR_LIMIT);
 
@@ -358,17 +341,20 @@ function renderizarColumnaEquipo(teamIdx, containerId) {
     return;
   }
 
+  var minimo = appState.charactersPerPlayer || 5;
   container.innerHTML = miembros.map(function(jugador, i) {
-    var rot = ROTACIONES_LOBBY[i % ROTACIONES_LOBBY.length];
-    var esYo = jugador && jugador.id === appState.myId;
+    var rot    = ROTACIONES_LOBBY[i % ROTACIONES_LOBBY.length];
+    var esYo   = jugador && jugador.id === appState.myId;
     var nombre = (jugador && jugador.name) ? escapeHtml(jugador.name) : '?';
     if (esYo) nombre += ' <em style="opacity:.5; font-size:10px;">(vos)</em>';
-    return (
-      '<div class="player-row ready" style="transform:rotate(' + rot + 'deg); font-size:11px;">' +
-        '<span>' + nombre + '</span>' +
-        CHECK_SVG +
-      '</div>'
-    );
+    var listo  = jugador && jugador.submittedCount >= minimo;
+    return listo
+      ? '<div class="player-row ready" style="transform:rotate(' + rot + 'deg); font-size:11px;">' +
+          '<span>' + nombre + '</span>' + CHECK_SVG +
+        '</div>'
+      : '<div class="player-row pending" style="transform:rotate(' + rot + 'deg); font-size:11px;">' +
+          '<span>' + nombre + ' <em style="opacity:.5;">escribiendo...</em></span>' +
+        '</div>';
   }).join('');
 }
 
