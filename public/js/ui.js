@@ -425,6 +425,13 @@ function setupTurn() {
 /* ============================================================
    PANTALLA ESPECTADOR
    ============================================================ */
+var SPEC_MOOD_MSGS = [
+  'Ánimo, no se vale ayudar desde acá',
+  'Silencio total, cara de póker',
+  'Si sabés la respuesta, te la aguantás',
+];
+var _specMoodIdx = 0;
+
 function setupSpectator() {
   var scores = appState.scores || { 0: 0, 1: 0 };
   var scoreA = document.getElementById('spec-score-a');
@@ -453,6 +460,13 @@ function setupSpectator() {
     strip.style.boxShadow  = (teamIdx === 0)
       ? '0 2px 8px rgba(194,91,58,.35)'
       : '0 2px 8px rgba(212,149,32,.35)';
+  }
+
+  /* Mensaje de ánimo genérico — rota entre variantes en cada turno */
+  var moodEl = document.getElementById('spec-mood-msg');
+  if (moodEl) {
+    moodEl.textContent = SPEC_MOOD_MSGS[_specMoodIdx % SPEC_MOOD_MSGS.length];
+    _specMoodIdx++;
   }
 
   iniciarCronometro();
